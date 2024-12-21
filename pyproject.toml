@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "model-training-pipeline"
+version = "0.1.0"
+description = ""
+authors = ["ariel.kover <ariel.kover@gmail.com>"]
+readme = "README.md"
+packages = [
+    {include = "*", from = "src"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pandas = "^2.2.3"
+mlflow = "^2.19.0"
+scikit-learn = "1.5.2"
+seaborn = "^0.13.2"
+python-dotenv = "^1.0.1"
+optuna = "^4.1.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+ipykernel = "^6.29.5"
+pynvml = "^12.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

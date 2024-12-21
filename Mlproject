@@ -1,0 +1,24 @@
+name: DemoMLPipeline
+
+# Use the system environment managed by Poetry
+# mlflow run . --env-manager: local # or virtualenv
+# or
+# python_env: python_env.yaml
+# or
+# conda_env: conda.yaml
+# or
+# docker_env:
+#    image:  mlflow-docker-example
+
+entry_points:
+  load:
+    command: "python src/pipelines/data_etl/load_data.py"
+  split:
+    command: "python src/pipelines/data_etl/split.py"
+  scale:
+    command: "python src/pipelines/feature_engineering/scale.py"
+  train:
+    parameters:
+      estimators: {type: int, default: 100}  # Optional with a default value
+      max-depth: {type: int, default: 5}  # Optional with a default value
+    command: "python src/pipelines/model_train/train_manual.py --estimators {estimators} --max-depth {max-depth}"
