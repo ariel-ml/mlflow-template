@@ -1,5 +1,6 @@
+from libs.data_etl import data_utils, paths
 from sklearn.model_selection import train_test_split
-from libs import logger, paths, data_utils
+from libs import logger
 
 
 LOG = logger.getLogger(__name__)

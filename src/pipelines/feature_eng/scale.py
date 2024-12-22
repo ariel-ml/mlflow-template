@@ -1,6 +1,7 @@
 import joblib
+from libs.data_etl import data_utils, paths
 from sklearn.preprocessing import StandardScaler
-from libs import logger, paths, data_utils
+from libs import logger
 
 
 LOG = logger.getLogger(__name__)

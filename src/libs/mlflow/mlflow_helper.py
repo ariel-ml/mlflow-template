@@ -9,8 +9,9 @@ from mlflow.models import infer_signature
 from mlflow.data import from_pandas
 import mlflow
 import pandas as pd
+import numpy as np
 from sklearn.base import BaseEstimator
-from libs import data_utils
+from libs.data_etl import data_utils
 
 LOG = logging.getLogger(__name__)
 
@@ -21,6 +22,8 @@ def __fully_qualified_class_name(obj):
 
 
 def __concat_columns(X, y):
+    if isinstance(X, np.ndarray):
+        X = pd.DataFrame(X)
     data = pd.concat([X, y], axis=1)
     data.rename(
         columns={
@@ -120,9 +123,12 @@ def log_auto(
             name=get_actual_experiment_name() + " / " + type(estimator).__name__,
         )
 
-    test_data = __concat_columns(X_test, y_test)
+    if X_test is not None and y_test is not None:
+        test_data = __concat_columns(X_test, y_test)
+    else:
+        test_data = None
 
-    if test_metrics:
+    if test_metrics and test_data is not None:
         test_result = mlflow.evaluate(
             model=estimator.predict,  # model_info.model_uri,
             data=test_data,
@@ -140,10 +146,10 @@ def log_auto(
 def log(
     estimator: BaseEstimator,
     hyper_params: dict,
-    X_train,
-    y_train,
-    X_test,
-    y_test,
+    X_train=None,
+    y_train=None,
+    X_test=None,
+    y_test=None,
     train_metrics: bool = False,
     test_metrics: bool = True,
     register_model: bool = False,
@@ -196,14 +202,19 @@ def log(
     # mlflow.log_metric(
     #     "test_roc_auc_score", roc_auc_score(y_test, y_pred_proba, multi_class="ovr")
     # )
+    if X_train is not None and y_train is not None:
+        train_data = __concat_columns(X_train, y_train)
+        train_dataset = from_pandas(train_data, targets=data_utils.TARGET_COLUMN)
+        mlflow.log_input(train_dataset, context="Train")
+    else:
+        train_dataset = None
 
-    train_data = __concat_columns(X_train, y_train)
-    test_data = __concat_columns(X_test, y_test)
-    train_dataset = from_pandas(train_data, targets=data_utils.TARGET_COLUMN)
-    test_dataset = from_pandas(test_data, targets=data_utils.TARGET_COLUMN)
-
-    mlflow.log_input(train_dataset, context="Train")
-    mlflow.log_input(test_dataset, context="Test")
+    if X_test is not None and y_test is not None:
+        test_data = __concat_columns(X_test, y_test)
+        test_dataset = from_pandas(test_data, targets=data_utils.TARGET_COLUMN)
+        mlflow.log_input(test_dataset, context="Test")
+    else:
+        test_dataset = None
 
     estimator_name = type(estimator).__name__
 
@@ -235,7 +246,11 @@ def log(
         sk_model=estimator,
         artifact_path="model",
         signature=signature,
-        input_example=X_test[:3],
+        input_example=(
+            X_test[:3]
+            if X_test is not None
+            else X_train[:3] if X_train is not None else None
+        ),
         registered_model_name=(
             get_actual_experiment_name() + " / " + estimator_name
             if register_model
@@ -245,7 +260,7 @@ def log(
 
     estimator_type = getattr(estimator, "_estimator_type", None)
 
-    if train_metrics:
+    if train_metrics and train_dataset is not None:
         mlflow.evaluate(
             model=estimator.predict,
             data=train_dataset,
@@ -253,7 +268,7 @@ def log(
             evaluator_config={"metric_prefix": "train_"},
         )
 
-    if test_metrics:
+    if test_metrics and test_dataset is not None:
         test_result = mlflow.evaluate(
             model=estimator.predict,
             data=test_dataset,

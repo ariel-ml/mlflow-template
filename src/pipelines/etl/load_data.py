@@ -1,6 +1,7 @@
+from libs.data_etl import paths
 import pandas as pd
 from sklearn import datasets
-from libs import logger, paths
+from libs import logger
 
 LOG = logger.getLogger(__name__)
 

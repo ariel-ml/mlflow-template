@@ -12,13 +12,13 @@ name: DemoMLPipeline
 
 entry_points:
   load:
-    command: "python src/pipelines/data_etl/load_data.py"
+    command: "python -m pipelines.etl.load_data"
   split:
-    command: "python src/pipelines/data_etl/split.py"
+    command: "python -m pipelines.etl.split"
   scale:
-    command: "python src/pipelines/feature_engineering/scale.py"
+    command: "python -m pipelines.feature_eng.scale"
   train:
     parameters:
       estimators: {type: int, default: 100}  # Optional with a default value
       max-depth: {type: int, default: 5}  # Optional with a default value
-    command: "python src/pipelines/model_train/train_manual.py --estimators {estimators} --max-depth {max-depth}"
+    command: "python -m pipelines.train.train_manual --estimators {estimators} --max-depth {max-depth}"

@@ -1,0 +1,20 @@
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: mlflow-server
+    hostname: mlflow-server
+    restart: no
+    ports:
+      - "5000:5000"
+    env_file: mlflow.env
+    command: "mlflow server --app-name basic-auth --backend-store-uri sqlite:////mlflow/mlruns/mlruns.db --artifacts-destination /mlflow/artifacts --host 0.0.0.0 --port 5000"
+    volumes:
+      - ./docker/basic_auth.ini:/usr/local/lib/python3.10/site-packages/mlflow/server/auth/basic_auth.ini
+      - ./docker/mlflow/mlruns:/mlflow/mlruns
+      - ./docker/mlflow/artifacts:/mlflow/artifacts
+      - ./docker/mlflow/auth:/mlflow/auth
+    networks:
+      - tools-network
+
+networks:
+  tools-network:
