@@ -1,8 +1,8 @@
-# MLFlow Demo Project
+# MLFlow Template Project
 
 ## Overview
 
-This project is a machine learning pipeline demo designed to preprocess data, train models, and manage experiments using MLflow. It includes various components for data handling, feature engineering, and model training, both manually and with autologging.
+This project is a machine learning pipeline template designed to preprocess data, train models, and manage experiments using MLflow. It includes various components for data handling, feature engineering, and model training, both manually and with autologging.
 
 ## Useful tutorial
 https://medium.com/@johnthuo/experiment-tracking-and-model-registry-with-mlflow-a74c30217e8c

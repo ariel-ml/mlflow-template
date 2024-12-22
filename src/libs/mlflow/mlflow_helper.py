@@ -2,6 +2,7 @@ import os
 import logging
 from contextlib import contextmanager
 from typing import Any, Dict, Literal
+import joblib
 from mlflow.entities import ViewType, Span
 from mlflow.tracking import MlflowClient
 from mlflow.store.artifact.models_artifact_repo import ModelsArtifactRepository
@@ -11,7 +12,7 @@ import mlflow
 import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator
-from libs.data_etl import data_utils
+from libs.data_etl import data_utils, paths
 
 LOG = logging.getLogger(__name__)
 
@@ -19,6 +20,12 @@ LOG = logging.getLogger(__name__)
 def __fully_qualified_class_name(obj):
     cls = obj.__class__
     return f"{cls.__module__}.{cls.__qualname__}"
+
+
+def __save_model(estimator: BaseEstimator):
+    estimator_name = type(estimator).__name__
+    joblib.dump(estimator, paths.MODEL_DATA_DIR / f"{estimator_name}.pkl")
+    LOG.info("Model saved to %s", paths.MODEL_DATA_DIR)
 
 
 def __concat_columns(X, y):
@@ -115,6 +122,8 @@ def log_auto(
         mlflow.log_param("_modified/" + key, value)
 
     mlflow.log_params(hyper_params)
+
+    __save_model(estimator)
 
     model_uri = f"runs:/{mlflow.active_run().info.run_id}/model"
     if register_model:
@@ -237,6 +246,8 @@ def log(
     # # Add the heatmap to artifacts
     # mlflow.log_artifact(heatmap_file_path)
     # os.remove(heatmap_file_path)
+
+    __save_model(estimator)
 
     # Infer the model signature
     signature = infer_signature(X_train, estimator.predict(X_train))
